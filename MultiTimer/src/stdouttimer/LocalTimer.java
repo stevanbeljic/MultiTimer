@@ -4,20 +4,19 @@ import java.util.TimerTask;
 
 public class LocalTimer implements Runnable {
 	
-	private int MILISECOND = 1000;
+	private int MILLISECOND = 1000;
 
 	private String name;
 	private int totalDuration;
 	private int remainingDuration;
 	
 	public void run(){
-		remainingDuration = totalDuration;
 		long startTime = System.currentTimeMillis();
 		synchronized(this) {
 			while(remainingDuration > 0) {
 				try{
-					wait(MILISECOND);
-					System.out.println(name+": "+remainingDuration);
+					wait(MILLISECOND);
+					notifyProgress();
 					remainingDuration--;
 				} catch (InterruptedException e) {
 					System.out.println(name + " interuppted");
@@ -33,6 +32,7 @@ public class LocalTimer implements Runnable {
 	public LocalTimer(String nameTimer, int totalDurationTimer) {
 		name = nameTimer;
 		totalDuration = totalDurationTimer;
+		remainingDuration = totalDuration;
 	}
 	
 	public int getTotalDuration() {
@@ -53,6 +53,10 @@ public class LocalTimer implements Runnable {
 	
 	public void setName(String nameTimer) {
 		name = nameTimer;
+	}
+	
+	public void notifyProgress() {
+		//Does nothing so far, made for future implementation
 	}
 	
 	public void notifyComplete() {
