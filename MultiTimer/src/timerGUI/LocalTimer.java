@@ -1,38 +1,19 @@
 package timerGUI;
-import java.util.Timer;
-import java.util.TimerTask;
 
-public class LocalTimer implements Runnable {
+public class LocalTimer {
 	
-	private int MILLISECOND = 1000;
-
 	private String name;
 	private int totalDuration;
 	private int remainingDuration;
-	
-	public void run(){
-		long startTime = System.currentTimeMillis();
-		synchronized(this) {
-			while(remainingDuration > 0) {
-				try{
-					wait(MILLISECOND);
-					notifyProgress();
-					remainingDuration--;
-				} catch (InterruptedException e) {
-					System.out.println(name + " interuppted");
-				}
-			}
-		}
-		long endTime = System.currentTimeMillis();
-		long elapsedTime = (endTime - startTime)/1000;
-		System.out.println("Elapsed time in timer: "+ elapsedTime +" seconds");
-		notifyComplete();
-	}
-	
+		
 	public LocalTimer(String nameTimer, int totalDurationTimer) {
 		name = nameTimer;
 		totalDuration = totalDurationTimer;
 		remainingDuration = totalDuration;
+	}
+	
+	public void decrementTime() {
+		remainingDuration--;
 	}
 	
 	public int getTotalDuration() {
@@ -56,10 +37,9 @@ public class LocalTimer implements Runnable {
 	}
 	
 	public void notifyProgress() {
-		//Does nothing so far, made for future implementation
 	}
 	
 	public void notifyComplete() {
-		System.out.println(name + " complete");
+		//System.out.println(name + " complete");
 	}
 }

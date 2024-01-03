@@ -2,6 +2,9 @@ package stdouttimer;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import timerGUI.TimeFormat;
+
+
 public class LocalTimer implements Runnable {
 	
 	private int MILLISECOND = 1000;
@@ -63,3 +66,4 @@ public class LocalTimer implements Runnable {
 		System.out.println(name + " complete");
 	}
 }
+
