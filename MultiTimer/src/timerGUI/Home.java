@@ -3,6 +3,7 @@ package timerGUI;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.io.File;
 import java.io.IOException;
@@ -11,6 +12,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
 import javax.swing.event.MenuKeyEvent;
 
 import java.awt.GridBagLayout;
@@ -19,8 +21,11 @@ import java.awt.Insets;
 import javax.swing.JSeparator;
 import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.SpringLayout;
 import javax.swing.UIManager;
 import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.SwingConstants;
 import javax.swing.SwingWorker;
@@ -98,6 +103,7 @@ public class Home extends JFrame {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setLocationByPlatform(true);
 		setSize(500,650);
+		setResizable(false);
 		contentPane = new JPanel();
 				
 		Border lightBlueBorder = BorderFactory.createLineBorder(lightBlue);
@@ -178,9 +184,9 @@ public class Home extends JFrame {
 		listTimers.setBackground(new Color(255, 255, 255));
 		listTimers.setBounds(5, 112, 476, 490);
 		contentPane.add(listTimers);
-		GridLayout gl_listTimers = new GridLayout(1, 1, 0, 10);
 		
-		listTimers.setLayout(gl_listTimers);
+		BoxLayout bl_listTimers = new BoxLayout(listTimers, BoxLayout.Y_AXIS);
+		listTimers.setLayout(bl_listTimers);
 		
 	}
 	
@@ -208,60 +214,79 @@ public class Home extends JFrame {
         
         
         TimerCard timerCard = new TimerCard(name, hours, minutes, seconds);  
-        timerCard.setSize(456, 100);
+
+        timerCard.setBorder(new LineBorder(Color.BLACK, 2, true));
         timerCard.setLayout(new FlowLayout());
-        GridLayout gl_listTimers = (GridLayout)listTimers.getLayout();
-        gl_listTimers.setRows(gl_listTimers.getRows()+1);
+        BoxLayout bl_listTimers = (BoxLayout)listTimers.getLayout();
+        //bl_listTimers.setRows(bl_listTimers.getRows()+1);
         listTimers.add(timerCard);
+        listTimers.add(Box.createVerticalStrut(5));
 
         listTimers.revalidate();
         //listTimers.repaint();
 	}
 	
 	
-	public class TimerCard extends JPanel{
-		private static final long serialVersionUID = 1L;
-		private String timerName;
-		private int totalDuration;
-		private int durationHours;
-		private int durationMinutes;
-		private int durationSeconds;
-		private LocalTimer lt;
-		JLabel timeLabel;
-		
-		public TimerCard(String name, int hours, int minutes, int seconds) {
-			this.timerName = name;
-			durationHours = hours;
-			durationMinutes = minutes;
-			durationSeconds = seconds;
-									
-			setSize(456, 100);
-			setLayout(new BorderLayout());
-			
-			JLabel nameLabel = new JLabel(name);
-			nameLabel.setFont(new Font("SansSerif", Font.BOLD, 18));
-	        add(nameLabel);
+	public class TimerCard extends JPanel {
+	    private static final long serialVersionUID = 1L;
+	    private String timerName;
+	    private int totalDuration;
+	    private int durationHours;
+	    private int durationMinutes;
+	    private int durationSeconds;
+	    private LocalTimer lt;
+	    JLabel timeLabel;
+
+	    public TimerCard(String name, int hours, int minutes, int seconds) {
+	        this.timerName = name;
+	        durationHours = hours;
+	        durationMinutes = minutes;
+	        durationSeconds = seconds;
 	        
-			totalDuration = seconds + (60 * minutes) + (3600 * hours);
+	        GridBagLayout gLayout = new GridBagLayout();
+	        setLayout(gLayout);
+
+	        GridBagConstraints gCon = new GridBagConstraints();
+	        gCon.gridx = 0;
+	        gCon.gridy = 0;
+	        gCon.weightx = 1.0; 
+	        gCon.weighty = 0.5;
+	        gCon.fill = GridBagConstraints.BOTH;
+	        
+	        JLabel nameLabel = new JLabel(name);
+	        nameLabel.setFont(new Font("SansSerif", Font.BOLD, 18));
+	        gLayout.setConstraints(nameLabel, gCon);	        
+	        add(nameLabel);
+
+	        totalDuration = seconds + (60 * minutes) + (3600 * hours);
 	        lt = new LocalTimer(timerName, totalDuration);
-			
+
 	        timeLabel = new JLabel(String.format("%02d:%02d:%02d", hours, minutes, seconds));
 	        timeLabel.setFont(new Font("SansSerif", Font.PLAIN, 18));
 	        add(timeLabel);
-		}
-		
-		public void updateTimeLabel() {
-			timeLabel.setText(String.format("%02d:%02d:%02d", lt.getRemainingDuration()/3600, lt.getRemainingDuration()%3600/60, lt.getRemainingDuration()%60));
-			if (durationSeconds == 0 && durationMinutes == 0 && durationHours == 0) {
+
+	        this.setPreferredSize(new Dimension(456, 85));
+	        this.setMinimumSize(new Dimension(456, 85));
+	        this.setMaximumSize(new Dimension(456, 85)); 
+	        this.revalidate();
+	    }
+
+	    public void updateTimeLabel() {
+	        timeLabel.setText(String.format("%02d:%02d:%02d", lt.getRemainingDuration() / 3600,
+	                lt.getRemainingDuration() % 3600 / 60, lt.getRemainingDuration() % 60));
+	        if (lt.getRemainingDuration() == 0) {
+	            AudioPlayer ap = new AudioPlayer("harp.wav");
+	            ap.play();
+	            listTimers.remove(this);
 	            System.out.println(timerName + " done!!!");
 	        }
-		}
-		
-		public void decrementTime() {
-			if(lt.getRemainingDuration()> 0) {
-				lt.decrementTime();
-			}
-		}
+	    }
+
+	    public void decrementTime() {
+	        if (lt.getRemainingDuration() > 0) {
+	            lt.decrementTime();
+	        }
+	    }
 	}
 	
 	public void clearLabels() {

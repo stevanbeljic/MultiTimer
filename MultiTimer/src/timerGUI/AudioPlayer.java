@@ -10,37 +10,34 @@ import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 
 public class AudioPlayer {
-	public static void main(String[] args) {
-		System.out.println("here");
-		try {
-			FileWriter fw = new FileWriter("test.txt");
-			fw.write("You think you're the king, im the king\n");
-			fw.close();
-		} catch (Exception e) {
-			e.printStackTrace();
-			System.out.println("in here");
-		}
-		System.out.println("now here");
-		AudioPlayer player = new AudioPlayer();
-		player.play();
-	}
+	
+	private Clip clip;
+	private String fileName;
+	private String filePath = "src/timerGUI/";
+	
 	public AudioPlayer() {
 		
 	}
 	
+	public AudioPlayer(String fName) {
+		fileName = fName;
+	}
+	
 	public void play() {
 		try {
+			String fullFilePath = filePath + fileName;
 			File audioFile = new File("src/timerGUI/harp.wav");
 			AudioInputStream audioStream = AudioSystem.getAudioInputStream(audioFile);
-			Clip clip = AudioSystem.getClip();
+			clip = AudioSystem.getClip();
 			clip.open(audioStream);
-			clip.start();
-			Thread.sleep(4000);
-			
-			clip.close();
+			clip.start();			
 			audioStream.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public void stopClip() {
+		clip.close();
 	}
 }
