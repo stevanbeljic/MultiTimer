@@ -2,8 +2,6 @@ package stdouttimer;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import timerGUI.TimeFormat;
-
 
 public class LocalTimer implements Runnable {
 	

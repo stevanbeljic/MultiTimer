@@ -258,7 +258,9 @@ public class Home extends JFrame {
 		}
 		
 		public void decrementTime() {
-			lt.decrementTime();
+			if(lt.getRemainingDuration()> 0) {
+				lt.decrementTime();
+			}
 		}
 	}
 	
@@ -286,5 +288,9 @@ public class Home extends JFrame {
 				e.printStackTrace();
 			}
 		}
+	}
+	
+	public void playSound() {
+		
 	}
 }
