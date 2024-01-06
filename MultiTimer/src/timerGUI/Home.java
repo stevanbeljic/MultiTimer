@@ -26,6 +26,7 @@ import javax.swing.UIManager;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.SwingConstants;
 import javax.swing.SwingWorker;
@@ -42,6 +43,7 @@ import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import java.awt.GridLayout;
+import java.awt.Image;
 import java.awt.FlowLayout;
 import javax.swing.JTable;
 
@@ -51,6 +53,8 @@ public class Home extends JFrame {
 	private Color white = Color.decode("#FFFFFF"); //primary color, white
 	private Color lightBlue = Color.decode("#AED9E0"); //secondary color, light blue
 	private Color lightPink = Color.decode("#F7CED7"); //tertiary color, light pink
+	
+	private int buttonDimension = 30;
 	
 	private static final long serialVersionUID = 1L;
 	private JPanel contentPane;
@@ -127,7 +131,11 @@ public class Home extends JFrame {
 		createButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				createTimerCard();
+				try{
+					createTimerCard();
+				} catch (NumberFormatException n) {
+					//Non-digits entered as numbers
+				}
 				clearLabels();
 			}
 		});
@@ -215,10 +223,6 @@ public class Home extends JFrame {
         
         TimerCard timerCard = new TimerCard(name, hours, minutes, seconds);  
 
-        timerCard.setBorder(new LineBorder(Color.BLACK, 2, true));
-        timerCard.setLayout(new FlowLayout());
-        BoxLayout bl_listTimers = (BoxLayout)listTimers.getLayout();
-        //bl_listTimers.setRows(bl_listTimers.getRows()+1);
         listTimers.add(timerCard);
         listTimers.add(Box.createVerticalStrut(5));
 
@@ -235,58 +239,137 @@ public class Home extends JFrame {
 	    private int durationMinutes;
 	    private int durationSeconds;
 	    private LocalTimer lt;
+	    private GridBagLayout gbl;
+	    private LineBorder lBorder;
+	    private JButton cancelButton;
+	    private JButton pauseButton;
 	    JLabel timeLabel;
+	    
+	    private boolean paused = false;
+	    private boolean disabled = false;
+	    
+	    public void setPause(boolean pauseStatus) {
+	    	paused = pauseStatus;
+	    }
+	    
+	    public boolean getPause() {
+	    	return paused;
+	    }
 
 	    public TimerCard(String name, int hours, int minutes, int seconds) {
+	    	this.setBackground(white);
+	    	
 	        this.timerName = name;
 	        durationHours = hours;
 	        durationMinutes = minutes;
 	        durationSeconds = seconds;
 	        
-	        GridBagLayout gLayout = new GridBagLayout();
-	        setLayout(gLayout);
-
-	        GridBagConstraints gCon = new GridBagConstraints();
-	        gCon.gridx = 0;
-	        gCon.gridy = 0;
-	        gCon.weightx = 1.0; 
-	        gCon.weighty = 0.5;
-	        gCon.fill = GridBagConstraints.BOTH;
+	        lBorder = new LineBorder(Color.BLACK, 2, true);
+	        setBorder(lBorder);
+	        gbl = new GridBagLayout();
+	        setLayout(gbl);
+	        GridBagConstraints gbc = new GridBagConstraints();
+	        
+	        JPanel buttonPanel = new JPanel();
+	        buttonPanel.setLayout(new FlowLayout());
 	        
 	        JLabel nameLabel = new JLabel(name);
 	        nameLabel.setFont(new Font("SansSerif", Font.BOLD, 18));
-	        gLayout.setConstraints(nameLabel, gCon);	        
-	        add(nameLabel);
+	        gbc.gridx = 1;
+	        gbc.gridy = 1;
+	        gbc.gridwidth = 1;
+	        add(nameLabel, gbc);
 
 	        totalDuration = seconds + (60 * minutes) + (3600 * hours);
 	        lt = new LocalTimer(timerName, totalDuration);
 
 	        timeLabel = new JLabel(String.format("%02d:%02d:%02d", hours, minutes, seconds));
 	        timeLabel.setFont(new Font("SansSerif", Font.PLAIN, 18));
-	        add(timeLabel);
-
+	        gbc.gridx = 1;
+	        gbc.gridy = 2;
+	        gbc.gridwidth = 1;
+	        add(timeLabel, gbc);
+	        
+	        gbc.gridx = 2;
+	        gbc.gridy = 2;
+	        add(Box.createHorizontalStrut(200), gbc);
+	        
+	        pauseButton = new JButton();
+	        ImageIcon pauseImg = new ImageIcon(getClass().getResource("pause.png"));
+	        pauseButton.setIcon(getScaledImage(pauseImg, buttonDimension, buttonDimension));
+	        pauseButton.setPreferredSize(new Dimension(buttonDimension, buttonDimension));
+	        
+	        ImageIcon playImg = new ImageIcon(getClass().getResource("play.png"));
+	        
+	        pauseButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					if(getPause()) {
+						pauseButton.setIcon(getScaledImage(pauseImg, buttonDimension, buttonDimension));
+						setPause(false);
+					} else {
+						pauseButton.setIcon(getScaledImage(playImg, buttonDimension, buttonDimension));
+						setPause(true);
+					}
+					
+				}
+			});
+	        gbc.gridx = 3;
+	        gbc.gridy = 2;
+	        add(pauseButton, gbc);
+	        
+	        gbc.gridx = 4;
+	        gbc.gridy = 2;
+	        add(Box.createHorizontalStrut(20), gbc);
+	        
+	        cancelButton = new JButton();
+	        ImageIcon cancelImg = new ImageIcon(getClass().getResource("close.jpg"));
+	        cancelButton.setIcon(getScaledImage(cancelImg, buttonDimension, buttonDimension));
+	        cancelButton.setPreferredSize(new Dimension(buttonDimension, buttonDimension));
+	        cancelButton.setEnabled(true);
+	        cancelButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					removeTimerCard();
+				}
+			});
+	        gbc.gridx = 5;
+	        gbc.gridy = 2;
+	        add(cancelButton, gbc);
+	        
 	        this.setPreferredSize(new Dimension(456, 85));
 	        this.setMinimumSize(new Dimension(456, 85));
 	        this.setMaximumSize(new Dimension(456, 85)); 
-	        this.revalidate();
+	        validate();
 	    }
 
 	    public void updateTimeLabel() {
-	        timeLabel.setText(String.format("%02d:%02d:%02d", lt.getRemainingDuration() / 3600,
-	                lt.getRemainingDuration() % 3600 / 60, lt.getRemainingDuration() % 60));
-	        if (lt.getRemainingDuration() == 0) {
+	        if (lt.getRemainingDuration() == 0 && !disabled) {
+	        	disabled = true;
 	            AudioPlayer ap = new AudioPlayer("harp.wav");
 	            ap.play();
-	            listTimers.remove(this);
-	            System.out.println(timerName + " done!!!");
+	            this.timeLabel.setText("Finished - " + formatTimeLabel(lt.getTotalDuration()));
+	            pauseButton.setVisible(false);
+	            return;
+	        } else if(!disabled) {
+	        	timeLabel.setText(formatTimeLabel(lt.getRemainingDuration()));
 	        }
+	    }
+	    
+	    public void removeTimerCard() {
+	    	listTimers.remove(this);
+	    	listTimers.revalidate();
 	    }
 
 	    public void decrementTime() {
-	        if (lt.getRemainingDuration() > 0) {
+	        if (lt.getRemainingDuration() > 0 && !this.paused) {
 	            lt.decrementTime();
 	        }
 	    }
+	    
+	    public String formatTimeLabel(int duration) {
+			return String.format("%02d:%02d:%02d", duration / 3600, duration % 3600 / 60, duration % 60);
+		}
 	}
 	
 	public void clearLabels() {
@@ -315,7 +398,10 @@ public class Home extends JFrame {
 		}
 	}
 	
-	public void playSound() {
-		
+	public ImageIcon getScaledImage(ImageIcon imgIcon, int width, int height) {
+		Image image = imgIcon.getImage();
+		Image newImage = image.getScaledInstance(width, height, java.awt.Image.SCALE_SMOOTH);
+		return new ImageIcon(newImage);
 	}
+	
 }
